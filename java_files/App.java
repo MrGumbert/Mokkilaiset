@@ -29,6 +29,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 
 public class App extends Application{
+    String HOST_USER = "root";
+    String HOST_PSWD = "root";
     ArrayList<Posti> postit = getPostit();
     ArrayList<Alue> alueet = getAlueet();
     ArrayList<Asiakas> asiakkaat = getAsiakkaat();
@@ -91,7 +93,7 @@ public class App extends Application{
     public ArrayList<Posti> getPostit(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM posti");
             ArrayList<Posti> temp = new ArrayList<Posti>();
@@ -111,7 +113,7 @@ public class App extends Application{
     public ArrayList<Alue> getAlueet(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM alue");
             ArrayList<Alue> temp = new ArrayList<Alue>();
@@ -132,7 +134,7 @@ public class App extends Application{
     public ArrayList<Asiakas> getAsiakkaat(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM asiakas");
             ArrayList<Asiakas> temp = new ArrayList<Asiakas>();
@@ -169,7 +171,7 @@ public class App extends Application{
     public ArrayList<Mokki> getMokit(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM mokki");
             ArrayList<Mokki> temp = new ArrayList<Mokki>();
@@ -212,7 +214,7 @@ public class App extends Application{
     public ArrayList<Varaus> getVaraukset(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM varaus");
             ArrayList<Varaus> temp = new ArrayList<Varaus>();
@@ -248,7 +250,7 @@ public class App extends Application{
     public ArrayList<Lasku> getLaskut(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM lasku");
             ArrayList<Lasku> temp = new ArrayList<Lasku>();
@@ -280,7 +282,7 @@ public class App extends Application{
     public ArrayList<Palvelu> getPalvelut(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM palvelu");
             ArrayList<Palvelu> temp = new ArrayList<Palvelu>();
@@ -318,7 +320,7 @@ public class App extends Application{
     public ArrayList<VarauksetPalvelut> getVarauksetPalvelut(){
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM varauksen_palvelut");
             ArrayList<VarauksetPalvelut> temp = new ArrayList<VarauksetPalvelut>();
@@ -367,7 +369,7 @@ public class App extends Application{
                     query += " WHERE asiakas_id=" + a.getAsiakasId();
 
                     Class.forName("com.mysql.cj.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(query);
                     con.close();
@@ -397,7 +399,7 @@ public class App extends Application{
                     query += " WHERE mokki_id=" + m.getMokkiId();
 
                     Class.forName("com.mysql.cj.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(query);
                     con.close();
@@ -766,7 +768,7 @@ public class App extends Application{
                     query += "'" + postiT + "')";
 
                     Class.forName("com.mysql.cj.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(query);
                     con.close();
@@ -797,7 +799,7 @@ public class App extends Application{
                     }
 
                     Class.forName("com.mysql.cj.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(query);
                     con.close();
@@ -968,7 +970,7 @@ public class App extends Application{
                                 query += " WHERE asiakas_id=" + a.getAsiakasId();
         
                                 Class.forName("com.mysql.cj.jdbc.Driver");
-                                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                                 Statement stmt = con.createStatement();
                                 stmt.executeUpdate(query);
                                 con.close();
@@ -1011,7 +1013,7 @@ public class App extends Application{
                     try{
                         String sql = "DELETE FROM asiakas WHERE asiakas_id=" + a.getAsiakasId();
                         Class.forName("com.mysql.cj.jdbc.Driver");
-                        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", "root", "Pattu");
+                        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
                         Statement stmt = con.createStatement();
                         stmt.executeUpdate(sql);
                         con.close();
