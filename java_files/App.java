@@ -435,6 +435,8 @@ public class App extends Application{
         Button varausNappi = new Button("Varaukset");
         Button palveluNappi = new Button("Palvelut");
         Button mokkiNappi = new Button("Mökit");
+        //@Niko Lopeta nappi, joka sulkee ohjelman
+        Button lopetaNappi = new Button("Lopeta");
 
         topPane.getChildren().add(etusivuNappi);
         topPane.getChildren().add(asiakasNappi);
@@ -442,6 +444,8 @@ public class App extends Application{
         topPane.getChildren().add(varausNappi);
         topPane.getChildren().add(palveluNappi);
         topPane.getChildren().add(mokkiNappi);
+        //@Niko 
+        topPane.getChildren().add(lopetaNappi);
 
         mainPanel.getChildren().add(topPane);
         mainPanel.getChildren().add(midPane);
@@ -501,6 +505,14 @@ public class App extends Application{
                 midPane.getChildren().clear();
                 midPane.getChildren().add(createMokitSivu());
             }
+        });
+        
+        /*@Niko
+        Toiminnallisuus lopetaNappiin
+        Sulkee ohjelman
+        */
+        lopetaNappi.setOnAction(e ->{
+            System.exit(0);
         });
 
         mainScene = new Scene(mainPanel);
