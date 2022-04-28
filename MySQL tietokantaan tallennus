@@ -1,0 +1,89 @@
+tallennaMokkiBtn.setOnAction(e -> {
+            int errors = 0;
+            String mokkiNimi = mokkiNimiUusi.getText();
+            String alueNimi = alueUusiCB.getValue();
+            int mokkiUusiAlueId = 0;
+            for(Alue a : alueet){
+                if(a.getNimi() == alueUusiCB.getValue()){
+                    mokkiUusiAlueId = a.getAlueId();
+                }
+            }
+            String mokkiKatuosoite = mokkiKatuosoiteUusiTxtField.getText();
+            String mokkiPostinro = mokkiPostinumeroUusiTxtField.getText();
+            String mokkiHinta = mokkiHintaUusiTxtField.getText();
+            String mokkiHenkLkm = mokkiHenklkmUusiTxtField.getText();
+            String mokkiKuvaus = mokkiKuvausUusiTxtField.getText();
+            String mokkiVarustelu = mokkiVarusteluUusiTxtField.getText();
+            mokkiNimiUusi.setTextFill(Color.BLACK);
+            mokkiPostinroUusi.setTextFill(Color.BLACK);
+            mokkiKatuosoiteUusi.setTextFill(Color.BLACK);
+            mokkiHintaUusi.setTextFill(Color.BLACK);
+            mokkiHenklkmUusi.setTextFill(Color.BLACK);
+            mokkiKuvausUusi.setTextFill(Color.BLACK);
+            mokkiVarusteluUusi.setTextFill(Color.BLACK);
+            if(mokkiNimi.length() == 0){
+                errors += 1;
+                mokkiNimiUusi.setTextFill(Color.RED);
+            }
+            if(mokkiKatuosoite.length() == 0){
+                errors += 1;
+                mokkiKatuosoiteUusi.setTextFill(Color.RED);
+            }
+            if(mokkiHinta.length() == 0){
+                errors += 1;
+                mokkiHintaUusi.setTextFill(Color.RED);
+            }
+            if(mokkiHenkLkm.length() == 0){
+                errors += 1;
+                mokkiHenklkmUusi.setTextFill(Color.RED);
+            }
+            if(mokkiKuvaus.length() == 0){
+                errors += 1;
+                mokkiKuvausUusi.setTextFill(Color.RED);
+            }
+            if(mokkiVarustelu.length() == 0){
+                errors += 1;
+                mokkiVarusteluUusi.setTextFill(Color.RED);
+            }
+           
+            if(errors == 0){
+                errMsgU.setText("");
+                try{
+                    String query = "INSERT INTO mokki VALUES (";
+                    query += "null" + ", ";
+                    query += "'" + mokkiUusiAlueId + "', ";
+                    query += "'" + mokkiPostinro + "', ";
+                    query += "'" + mokkiNimi + "', ";
+                    query += "'" + mokkiKatuosoite + "', ";
+                    query += "'" + Double.parseDouble(mokkiHinta) + "', ";
+                    query += "'" + mokkiKuvaus + "', ";
+                    query += "'" + Integer.parseInt(mokkiHenkLkm) + "', ";
+                    query += "'" + mokkiVarustelu + "', ";
+        
+
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+                    Statement stmt = con.createStatement();
+                    stmt.executeUpdate(query);
+                    con.close();
+                    
+                    mokkiNimiUusiTxtField.setText("");
+                    alueUusiCB.setPromptText("Valitse alue.");
+                    mokkiKatuosoiteUusiTxtField.setText("");
+                    mokkiHintaUusiTxtField.setText("");
+                    mokkiHenklkmUusiTxtField.setText("");
+                    mokkiKuvausUusiTxtField.setText("");
+                    mokkiVarusteluUusiTxtField.setText("");
+                    
+                    setMokit(getMokit());
+               
+                 
+                    errMsgU.setText("Mökki tallennettu");
+                }catch(Exception err){
+                    System.out.println(err);
+                    errMsgU.setText("Mökin tallennuksessa virhe!");
+                }
+            }else{
+                errMsgU.setText("Virhe! Tarkista syöttämäsi tiedot");
+            }
+        });
