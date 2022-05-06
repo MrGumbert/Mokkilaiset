@@ -20,7 +20,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
@@ -1348,6 +1347,7 @@ public class App extends Application{
         return sp;
     }
 
+    /*VANHA PALVELUT NÄKYMÄ, POISTA KUN UUSI VALMIS!
     private ScrollPane createPalvelutSivu(){
         ScrollPane sp = new ScrollPane();
         sp.setFitToWidth(true);
@@ -1366,22 +1366,11 @@ public class App extends Application{
             Label label = new Label(p.getNimi() + " " + p.getKuvaus());
             label.setPadding(new Insets(15, 5, 15, 5));
             String n = "Id: " + p.getPalveluId() + ", " + p.getNimi();
-            /**@Niko
-             *Lisää napin otsikkoon, jonka avulla palvelua pääsee muokkaamaan
-             *Yllä oleva Label label pitää korvata, jotta napin voi lisätä tai 
-             se pitää lisätä johonkin toiseen
-             Luo uuden labelin tähän, yllä palvelun kuvaus turha?
-             */ 
-            Button pButton = new Button("Muokaa palvelua");
+         
             HBox palvelutHBox = new HBox();
             Label labelNimi = new Label(p.getNimi());
             palvelutHBox.getChildren().add(labelNimi);
-            palvelutHBox.getChildren().add(pButton);
-            //Toiminnallisuus nappiin
-            pButton.setOnAction(e-> {
-                palveluidenhallintaSivu(p);
-            });
-            //Korvataan tähän labelin tilalle Hbox
+        
             TitledPane i = new TitledPane(n, palvelutHBox);
             i.setExpanded(false);
 
@@ -1389,55 +1378,392 @@ public class App extends Application{
         }
         palvelutSivu.getChildren().add(palvelutBox);
 
+
+
+
         return sp;
     }
-
-    /**@Niko
-     * Palveluiden muokkaus
-     * Yllä oleva vie uuteen ikkunaan, jossa palvelua voi muokata. 
-     * @param Palvelu p
     */
-    private void palveluidenhallintaSivu(Palvelu p){
-        GridPane gp = new GridPane();
-        Label palvelutLabel1 = new Label("Palveuiden hallinta");
-        Label palvelutLabel2 = new Label("Palvelun nimi");
-        Label palvelutLabel3 = new Label("Palvelun tyyppi");
-        Label palvelutLabel4 = new Label("Palvelun hinta");
-        Label palvelutLabel5 = new Label("Palvelun alv");
-        Label palvelutLabel6 = new Label("Palvelun alue");
-        Label palvelutLabel7 = new Label("Palvelun kuvaus");
 
-        TextField palvelutTextField1 = new TextField(String.valueOf(p.getNimi()));
-        TextField palvelutTextField2 = new TextField(String.valueOf(p.getTyyppi()));
-        TextField palvelutTextField3 = new TextField(String.valueOf(p.getHinta()));
-        TextField palvelutTextField4 = new TextField(String.valueOf(p.getAlv()));
+    //UUSI PALVELUT NÄKYMÄ
+    private ScrollPane createPalvelutSivu(){
+        ScrollPane sp = new ScrollPane();
+        VBox palvelutSivu = new VBox();
+        sp.setFitToWidth(true);
+        //sp.setFitToHeight(true);
+        sp.setContent(palvelutSivu);
+        palvelutSivu.setStyle("-fx-background-color:#fff;");
+        palvelutSivu.setAlignment(Pos.CENTER);
+        palvelutSivu.setPadding(new Insets(10,0,0,0));
+        Text palvelutTitle = new Text("Palvelut");
+        palvelutTitle.setStyle("-fx-font: 24 arial;");
+        palvelutSivu.getChildren().add(palvelutTitle);
 
-        TextArea palvelutTextArea = new TextArea(p.getKuvaus());
+        HBox palvelutMenu = new HBox(10);
+        palvelutMenu.setAlignment(Pos.CENTER);
+        palvelutMenu.setPadding(new Insets(10, 0, 10, 0));
+        Button uusiPalvelu = new Button("Luo uusi palvelu");
+        Button listPalvelut = new Button("Palvelulista");
 
-        Button palvelutTallenna = new Button("Tallenna");
-        Button palvelutPeruuta = new Button("Peruuta");
+        palvelutMenu.getChildren().add(listPalvelut);
+        palvelutMenu.getChildren().add(uusiPalvelu);
+        palvelutSivu.getChildren().add(palvelutMenu);
+        
+        GridPane palvelutHaeLomake = new GridPane();
+        palvelutHaeLomake.setHgap(8);
+        palvelutHaeLomake.setVgap(4);
+        palvelutHaeLomake.setPadding(new Insets(15, 0, 10, 0));
+        palvelutHaeLomake.setAlignment(Pos.CENTER);
+        
 
-        //Otsikko
-        gp.add(palvelutLabel1, 2, 0);
-        //Muut
-        gp.add(palvelutLabel2, 0, 1);
-        gp.add(palvelutLabel3, 0, 2);
-        gp.add(palvelutLabel4, 0, 3);
-        gp.add(palvelutLabel5, 1, 3);
-        gp.add(palvelutLabel6, 0, 4);
-        gp.add(palvelutLabel7, 0, 5);
+        //LUO UUSI PALVELU NÄKYMÄ
+        GridPane palvelutLuo = new GridPane();
+        palvelutLuo.setAlignment(Pos.CENTER);
+        palvelutLuo.setPadding(new Insets(15,0,15,0));
+        palvelutLuo.setHgap(6);
+        palvelutLuo.setVgap(11);
+        Label errMsgU = new Label("");
+        errMsgU.setTextFill(Color.RED);
 
-        Scene palvelutScene = new Scene(gp);
+        Label palveluAlueUusiLabel = new Label("Palvelun alue: ");
+        Label palveluNimiUusiLabel = new Label("Palvelun nimi: ");
+        //Mikä tämä on??
+        Label palveluTyyppiUusiLabel = new Label("Palvelun tyyppi: ");
+        Label palveluKuvausUusiLabel = new Label("Palvelun kuvaus: ");
+        Label palveluHintaUusiLabel = new Label("Hinta: "); 
+        Label palveluAlvUusiLabel = new Label("Alv: ");
 
-        Stage palvelutIkkuna = new Stage();
-        palvelutIkkuna.setTitle("Palveluiden hallinta");
-        palvelutIkkuna.setScene(palvelutScene);
-        palvelutIkkuna.setHeight(500);
-        palvelutIkkuna.setWidth(500);
-        palvelutIkkuna.show();
+        setAlueet(getAlueet());
 
+        ComboBox<String> alueUusiCB = new ComboBox<String>();
+        alueUusiCB.setPromptText("Valitse alue.");
+        for(Alue a : alueet){
+            String alueNimiCB = a.getNimi();
+            alueUusiCB.getItems().add(alueNimiCB);
+        }
+    
+        TextField palveluNimiUusiTxtField = new TextField();
+        TextField palveluTyyppiUusiTxtField = new TextField();
+        TextField palveluKuvausUusiTxtField = new TextField();
+        TextField palveluHintaUusiTxtField = new TextField();
+        TextField palveluAlvUusiTxtField = new TextField();
+        
+        /**
+         * Lisätään yllä luodut näkymään
+         */
+        palvelutLuo.add(errMsgU, 0,0);
+
+        palvelutLuo.add(palveluAlueUusiLabel, 0,1);
+        palvelutLuo.add(alueUusiCB, 0,2);
+
+        palvelutLuo.add(palveluNimiUusiLabel, 1, 1);
+        palvelutLuo.add(palveluNimiUusiTxtField, 1, 2);
+
+        palvelutLuo.add(palveluTyyppiUusiLabel, 0,3);
+        palvelutLuo.add(palveluTyyppiUusiTxtField, 0,4);
+
+        palvelutLuo.add(palveluKuvausUusiLabel, 1, 3);
+        palvelutLuo.add(palveluKuvausUusiTxtField, 1, 4);
+    
+        palvelutLuo.add(palveluHintaUusiLabel, 0,5);
+        palvelutLuo.add(palveluHintaUusiTxtField, 0,6);
+
+        palvelutLuo.add(palveluAlvUusiLabel, 1,5);
+        palvelutLuo.add(palveluAlvUusiTxtField, 1,6);
+
+    
+        Button tallennaPalveluBtn = new Button("Tallenna");
+        palvelutLuo.add(tallennaPalveluBtn, 1,9);
+        
+        uusiPalvelu.setOnAction(e -> {
+            palvelutSivu.getChildren().clear();
+            palvelutSivu.getChildren().add(palvelutTitle);
+            palvelutSivu.getChildren().add(palvelutMenu);
+            palvelutSivu.getChildren().add(palvelutLuo);
+        });
+
+        listPalvelut.setOnAction(e -> {
+            palvelutSivu.getChildren().clear();
+            palvelutSivu.getChildren().add(palvelutTitle);
+            palvelutSivu.getChildren().add(palvelutMenu);
+            palvelutSivu.getChildren().add(palvelutHaeLomake);
+            palvelutSivu.getChildren().add(createPalvelutBox(palvelut));
+        });
+
+        
+        tallennaPalveluBtn.setOnAction(e -> {
+            int errors = 0;
+
+
+            String alueNimiUusi = alueUusiCB.getValue();
+            int palveluUusiAlueId = 0;
+            for(Alue a : alueet){
+                if(a.getNimi() == alueUusiCB.getValue()){
+                    palveluUusiAlueId = a.getAlueId();
+                }
+            }
+            String palveluNimiUusi = palveluNimiUusiTxtField.getText();
+            String palveluTyyppiUusi = palveluTyyppiUusiTxtField.getText();
+            String palveluKuvausUusi = palveluKuvausUusiTxtField.getText();
+            String palveluHintaUusi = palveluHintaUusiTxtField.getText();
+            String palveluAlvUusi = palveluAlvUusiTxtField.getText();
+        
+            palveluAlueUusiLabel.setTextFill(Color.BLACK);
+            palveluNimiUusiLabel.setTextFill(Color.BLACK);
+            palveluTyyppiUusiLabel.setTextFill(Color.BLACK);
+            palveluKuvausUusiLabel.setTextFill(Color.BLACK);
+            palveluHintaUusiLabel.setTextFill(Color.BLACK);
+            palveluAlvUusiLabel.setTextFill(Color.BLACK);
+            if(palveluNimiUusi.length() == 0){
+                errors += 1;
+                palveluNimiUusiLabel.setTextFill(Color.RED);
+            }
+            if(palveluTyyppiUusi.length() == 0){
+                errors += 1;
+                palveluTyyppiUusiLabel.setTextFill(Color.RED);
+            }
+            if(palveluKuvausUusi.length() == 0){
+                errors += 1;
+                palveluKuvausUusiLabel.setTextFill(Color.RED);
+            }
+            if(palveluHintaUusi.length() == 0){
+                errors += 1;
+                palveluHintaUusiLabel.setTextFill(Color.RED);
+            }
+            if(palveluAlvUusi.length() == 0){
+                errors += 1;
+                palveluAlvUusiLabel.setTextFill(Color.RED);
+            }
+            
+            /*TOINEN TAPA TALLENTAA MYSQL
+            TÄÄ TOIMII MULLA
+            */
+            try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+
+            String sql = "INSERT INTO palvelu values (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            
+            pstmt.setString(1, null);
+            pstmt.setInt(2, palveluUusiAlueId);
+            pstmt.setString(3, palveluNimiUusi);
+            pstmt.setString(4, palveluTyyppiUusi);
+            pstmt.setString(5, palveluKuvausUusi);
+            pstmt.setDouble(6, Double.parseDouble(palveluHintaUusi));
+            pstmt.setDouble(7, Double.parseDouble(palveluAlvUusi));
+       
+            pstmt.executeUpdate();
+            
+            conn.close();
+            
+            palveluNimiUusiTxtField.setText("");
+            alueUusiCB.setPromptText("Valitse alue.");
+            palveluTyyppiUusiTxtField.setText("");
+            palveluKuvausUusiTxtField.setText("");
+            palveluHintaUusiTxtField.setText("");
+            palveluAlvUusiTxtField.setText("");
+                    
+            setPalvelut(getPalvelut());
+
+            errMsgU.setText("Palvelu tallennettu");
+        }catch(Exception err){
+            System.out.println(err);
+            errMsgU.setText("Palvelun tallennuksessa virhe!");
+        }
+        });
+        
+        palvelutSivu.getChildren().add(palvelutHaeLomake);
+       
+        palvelutSivu.getChildren().add(createPalvelutBox(palvelut));
+        
+    return sp;  
+}
+    
+
+    private VBox createPalvelutBox(ArrayList<Palvelu> param){
+        VBox palvelutBox = new VBox();
+        palvelutBox.setPadding(new Insets(10,10,10,10));
+        if(param.isEmpty()){
+            Text noPalvelu = new Text("Palveluita ei löytynyt.");
+            palvelutBox.getChildren().add(noPalvelu);
+        }else{
+            for(Palvelu p : param){
+                
+                String n = "Id: " + p.getPalveluId() + ", " + p.getNimi();
+                VBox palveluTiedot = new VBox();
+                Text errMsgM = new Text();
+                errMsgM.setFill(Color.RED);
+                
+                palveluTiedot.getChildren().add(errMsgM);
+                GridPane pTiedot = new GridPane();
+                pTiedot.setHgap(5);
+                pTiedot.setVgap(6);
+                pTiedot.setPadding(new Insets(15, 5, 15, 5));
+                if(p != null){
+
+                    Label palveluAlueLabel = new Label("Palvelun alue");
+                    ComboBox<String> palveluAlueCB = new ComboBox<String>();
+                    
+                    Alue palvelunAlue = p.getAlue();
+                    
+                    palveluAlueCB.setPromptText(palvelunAlue.getNimi());
+                          
+
+                    Label palveluNimiLabel = new Label("Palvelun nimi: ");
+                    TextField palveluNimiTxtField = new TextField(p.getNimi());
+                    pTiedot.add(palveluNimiLabel, 0 ,0);
+                    pTiedot.add(palveluNimiTxtField, 0,1);
+                    
+               
+                    Label palveluTyyppiLabel = new Label("Tyyppi: ");
+                    TextField palveluTyyppiTxtField = new TextField(String.valueOf(p.getTyyppi()));
+                    pTiedot.add(palveluTyyppiLabel, 1, 0);
+                    pTiedot.add(palveluTyyppiTxtField, 1, 1);
+                    
+                    Label palveluKuvausLabel = new Label("Kuvaus: ");
+                    TextField palveluKuvausTxtField = new TextField(p.getKuvaus());
+                    pTiedot.add(palveluKuvausLabel, 0, 2);
+                    pTiedot.add(palveluKuvausTxtField, 0, 3);
+
+                    Label palveluHintaLabel = new Label("Hinta: ");
+                    TextField palveluHintaTxtField = new TextField(String.valueOf(p.getHinta()));
+                    pTiedot.add(palveluHintaLabel, 1, 2);
+                    pTiedot.add(palveluHintaTxtField, 1, 3);
+
+                    Label palveluAlvLabel = new Label("Label: ");
+                    TextField palveluAlvTxtField = new TextField(String.valueOf(p.getAlv()));
+                    pTiedot.add(palveluAlvLabel,0, 4);
+                    pTiedot.add(palveluAlvTxtField, 0, 5);
+                
+                    palveluTiedot.getChildren().add(pTiedot);
+                    TitledPane i = new TitledPane(n, palveluTiedot);
+                    i.setExpanded(false);
+                    palvelutBox.getChildren().add(i);
+
+                    Button saveEditBtn = new Button("Tallenna");
+                    pTiedot.add(saveEditBtn, 0,8);
+                    Button deletePalvleuBtn = new Button("Poista");
+                    pTiedot.add(deletePalvleuBtn, 1,8);
+                
+                 
+                    deletePalvleuBtn.setOnAction(e -> {
+                        try{
+                            
+                            Class.forName("com.mysql.cj.jdbc.Driver");
+                            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+                            String sql = "DELETE FROM palvelu WHERE palvelu_id = ?";
+                            PreparedStatement poista = conn.prepareStatement(sql);
+                            
+                            poista.setInt(1, p.getPalveluId());
+                            poista.executeUpdate();
+                            conn.close();
+                            palvelutBox.getChildren().remove(i);
+                            for(Palvelu p2 : palvelut){
+                                if(p2.getPalveluId() == p.getPalveluId()){
+                                    palvelut.remove(p);
+                                    break;
+                                }
+                            }
+                        }catch(Exception err){
+                            System.out.println(err);
+                        }
+                    });
+                
+                saveEditBtn.setOnAction(e ->{
+                    int errors = 0;
+
+                    int palveluMuokattuAlueId = 0;
+                    for(Alue a : alueet){
+                        if(a.getNimi() == palveluAlueCB.getValue()){
+                            palveluMuokattuAlueId = a.getAlueId();
+                        }
+                    String palveluMuokattuNimi = palveluNimiTxtField.getText();
+                
+                    
+                    String palveluMuokattuTyyppi = palveluTyyppiTxtField.getText();
+                    String palveluMuokattuKuvaus = palveluKuvausTxtField.getText();
+                    String palveluMuokattuHinta = palveluHintaTxtField.getText();
+                    String palveluMuokattuAlv = palveluAlvTxtField.getText();
+              
+                    palveluAlueLabel.setTextFill(Color.BLACK);
+                    palveluNimiLabel.setTextFill(Color.BLACK);
+                    palveluTyyppiLabel.setTextFill(Color.BLACK);
+                    palveluKuvausLabel.setTextFill(Color.BLACK);
+                    palveluHintaLabel.setTextFill(Color.BLACK);
+                    palveluAlvLabel.setTextFill(Color.BLACK);
+
+                    if(palveluMuokattuNimi.length() == 0){
+                        errors += 1;
+                        palveluNimiLabel.setTextFill(Color.RED);
+                    }
+                    if(palveluMuokattuTyyppi.length() == 0){
+                        errors += 1;
+                        palveluTyyppiLabel.setTextFill(Color.RED);
+                    }
+                    if(palveluMuokattuKuvaus.length() == 0){
+                        errors += 1;
+                        palveluKuvausLabel.setTextFill(Color.RED);
+                    }
+                    if(palveluMuokattuHinta.length() == 0){
+                        errors += 1;
+                        palveluHintaLabel.setTextFill(Color.RED);
+                    }
+                    if(palveluMuokattuAlv.length() == 0){
+                        errors += 1;
+                        palveluAlvLabel.setTextFill(Color.RED);
+                    }
+    
+                    if(errors == 0){
+                            try{
+
+                                Class.forName("com.mysql.cj.jdbc.Driver");
+                                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+
+                                String sql =  "UPDATE palvelu SET nimi = ?, tyyppi = ?, kuvaus = ?, hinta = ?, alv = ? WHERE palvelu_id = ?";
+                                PreparedStatement update = conn.prepareStatement(sql);
+                                
+                                update.setString(1, palveluMuokattuNimi);
+                                update.setString(2, palveluMuokattuTyyppi);
+                                update.setString(3, palveluMuokattuKuvaus);
+                                update.setDouble(4, Double.parseDouble(palveluMuokattuHinta));
+                                update.setDouble(5, Double.parseDouble(palveluMuokattuAlv));
+                                update.setInt(6, p.getPalveluId());
+                        
+                                update.executeUpdate();
+                                
+                                conn.close();
+
+                                /*
+                                for(Alue b: alueet){
+                                    if(b.getNimi() == mokkiMuokattuAlue){
+                                        m.setAlue(b);
+                                    }
+                                }
+                                */
+
+                                p.setNimi(palveluMuokattuNimi);
+                                p.setTyyppi(Integer.parseInt(palveluMuokattuTyyppi));
+                                p.setKuvaus(palveluMuokattuKuvaus);
+                                p.setHinta(Double.parseDouble(palveluMuokattuHinta));
+                                p.setAlv(Double.parseDouble(palveluMuokattuAlv));
+                                errMsgM.setText("Muutokset tallennettu");
+                                errMsgM.setFill(Color.GREEN);
+                                i.setText("Id: " + p.getPalveluId() + ", " + p.getNimi());
+                               
+                            }catch(Exception err){
+                                System.out.println(err);
+                                errMsgM.setText("Muutosten tallennuksessa virhe!");
+                            }
+                        }
+                    }
+                });    
+        }   
     }
-
+}
+return palvelutBox;
+    }
+ 
     
     //UUSI MÖKIT SIVU
     private ScrollPane createMokitSivu(){
@@ -2126,7 +2452,7 @@ return mokitBox;
 private ScrollPane createRaportitSivu(){
     ScrollPane sp = new ScrollPane();
     VBox raportitSivu = new VBox();
-    sp.setFitToWidth(false);
+    sp.setFitToWidth(true);
     //sp.setFitToHeight(true);
     sp.setContent(raportitSivu);
     raportitSivu.setStyle("-fx-background-color:#fff;");
@@ -2179,7 +2505,224 @@ private ScrollPane createRaportitSivu(){
     raportitSivu.getChildren().add(raportitLomake);
     //raportitSivu.getChildren().add(createMokitBox(mokit));
 
+    tulostaRaportti.setOnAction(e -> {
+
+    });
+
     return sp;
 }
-    
+
+/*
+private VBox createRaportitBox(ArrayList<Alue> param1, ArrayList<Palvelu> param2){
+    VBox raportitBox = new VBox();
+    raportitBox.setPadding(new Insets(10,10,10,10));
+    if(param.isEmpty()){
+        Text noMokki = new Text("Mökkejä ei löytynyt.");
+        mokitBox.getChildren().add(noMokki);
+    }else{
+        for(Mokki m : param){
+            
+            String n = "Id: " + m.getMokkiId() + ", " + m.getMokkinimi();
+            VBox mmTiedot = new VBox();
+            Text errMsgM = new Text();
+            errMsgM.setFill(Color.RED);
+            
+            mmTiedot.getChildren().add(errMsgM);
+            GridPane mTiedot = new GridPane();
+            mTiedot.setHgap(5);
+            mTiedot.setVgap(6);
+            mTiedot.setPadding(new Insets(15, 5, 15, 5));
+            if(m != null){
+                Label mokkiNimiLabel = new Label("Mökin nimi: ");
+                TextField mokkiNimiTxtField = new TextField(m.getMokkinimi());
+                mTiedot.add(mokkiNimiLabel, 0 ,0);
+                mTiedot.add(mokkiNimiTxtField, 0,1);
+                
+     
+                Label mokkiAlue = new Label("Alue: ");
+                TextField mokkiAlueTxtField = new TextField(m.getAlue().getNimi());
+                mokkiAlueTxtField.setEditable(false);
+                mTiedot.add(mokkiAlue, 1, 0);
+                mTiedot.add(mokkiAlueTxtField, 1, 1);
+                
+                Label mokkiOsoite = new Label("Katuosoite: ");
+                TextField mokkiOsoiteTxtField = new TextField(m.getKatuosoite());
+                mokkiOsoiteTxtField.setEditable(false);
+                mTiedot.add(mokkiOsoite, 0, 2);
+                mTiedot.add(mokkiOsoiteTxtField, 0, 3);
+
+                Label mokkiPostinro = new Label("Postinumero: ");
+                TextField mokkiPostinumeroTxtField = new TextField(m.getPosti().getPostinro());
+                mokkiPostinumeroTxtField.setEditable(false);
+                mTiedot.add(mokkiPostinro, 1, 2);
+                mTiedot.add(mokkiPostinumeroTxtField, 1, 3);
+
+                Label mokkiHinta = new Label("Hinta: ");
+                TextField mokkiHintaTxtField = new TextField(String.valueOf(m.gethinta()));
+                mTiedot.add(mokkiHinta,0, 4);
+                mTiedot.add(mokkiHintaTxtField, 0, 5);
+
+                Label mokkiHenkmaara = new Label("Henkilömäärä: ");
+                TextField mokkiHenkmaaraTxtField = new TextField(String.valueOf(m.getHenkilomaara()));
+                mTiedot.add(mokkiHenkmaara, 1, 4);
+                mTiedot.add(mokkiHenkmaaraTxtField, 1, 5);
+
+                Label mokkiKuvaus = new Label("Kuvaus: ");
+                TextField mokkiKuvausTxtField = new TextField(m.getKuvaus());
+                mTiedot.add(mokkiKuvaus, 0, 6);
+                mTiedot.add(mokkiKuvausTxtField, 0, 7);
+
+                Label mokkiVarustelu = new Label("Mökin varustelu: ");
+                TextField mokkiVarusteluTxtField = new TextField(m.getVarustelu());
+                mTiedot.add(mokkiVarustelu, 1, 6);
+                mTiedot.add(mokkiVarusteluTxtField,1, 7);
+            
+                mmTiedot.getChildren().add(mTiedot);
+                TitledPane i = new TitledPane(n, mmTiedot);
+                i.setExpanded(false);
+                mokitBox.getChildren().add(i);
+
+                Button saveEditBtn = new Button("Tallenna");
+                mTiedot.add(saveEditBtn, 0,8);
+                Button deleteMokkiBtn = new Button("Poista");
+                mTiedot.add(deleteMokkiBtn, 1,8);
+            
+            
+                deleteMokkiBtn.setOnAction(e -> {
+                    try{
+                        
+                        Class.forName("com.mysql.cj.jdbc.Driver");
+                        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+                        String sql = "DELETE FROM mokki WHERE mokki_id = ?";
+                        PreparedStatement poista = conn.prepareStatement(sql);
+                        
+                        poista.setInt(1, m.getMokkiId());
+                        poista.executeUpdate();
+                        conn.close();
+                        mokitBox.getChildren().remove(i);
+                        for(Mokki m2 : mokit){
+                            if(m2.getMokkiId() == m.getMokkiId()){
+                                mokit.remove(m);
+                                break;
+                            }
+                        }
+                    }catch(Exception err){
+                        System.out.println(err);
+                    }
+                });
+            
+            saveEditBtn.setOnAction(e ->{
+                int errors = 0;
+                String mokkiMuokattuNimi = mokkiNimiTxtField.getText();
+                String mokkiMuokattuAlue = mokkiAlueTxtField.getText();
+                int mokkiMuokattuAlueId = 0;
+                for(Alue a : alueet){
+                    if(a.getNimi() == mokkiAlueTxtField.getText()){
+                        mokkiMuokattuAlueId = a.getAlueId();
+                    }
+                String mokkiMuokattuOsosite = mokkiOsoiteTxtField.getText();
+                String mokkiMuokattuPostinro = mokkiPostinumeroTxtField.getText();
+                String mokkiMuokattuHinta = mokkiHintaTxtField.getText();
+                String mokkiMuokattuHenkmaara = mokkiHenkmaaraTxtField.getText();
+                String mokkiMuokattuKuvaus = mokkiKuvausTxtField.getText();
+                String mokkiMuokattuVarustelu = mokkiVarusteluTxtField.getText(); 
+                
+                mokkiNimiLabel.setTextFill(Color.BLACK);
+                mokkiAlue.setTextFill(Color.BLACK);
+                mokkiOsoite.setTextFill(Color.BLACK);
+                mokkiPostinro.setTextFill(Color.BLACK);
+                mokkiHinta.setTextFill(Color.BLACK);
+                mokkiHenkmaara.setTextFill(Color.BLACK);
+                mokkiKuvaus.setTextFill(Color.BLACK);
+                mokkiVarustelu.setTextFill(Color.BLACK);
+
+                if(mokkiMuokattuNimi.length() == 0){
+                    errors += 1;
+                    mokkiNimiLabel.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuAlue.length() == 0){
+                    errors += 1;
+                    mokkiAlue.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuOsosite.length() == 0){
+                    errors += 1;
+                    mokkiOsoite.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuPostinro.length() == 0){
+                    errors += 1;
+                    mokkiPostinro.setTextFill(Color.RED);
+                }else if(mokkiMuokattuPostinro.equals("00000")){
+                    errors += 1001;
+                    mokkiPostinro.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuHinta.length() == 0){
+                    errors += 1;
+                    mokkiHinta.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuHenkmaara.length() == 0){
+                    errors += 1;
+                    mokkiHenkmaara.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuKuvaus.length() == 0){
+                    errors += 1;
+                    mokkiKuvaus.setTextFill(Color.RED);
+                }
+                if(mokkiMuokattuVarustelu.length() == 0){
+                    errors += 1;
+                    mokkiVarustelu.setTextFill(Color.RED);
+                }
+
+                if(errors == 0){
+                    if(m.checkCopy(mokkiMuokattuAlue, mokkiMuokattuPostinro, mokkiMuokattuNimi, mokkiMuokattuOsosite)){
+                        
+                    }else{
+                        try{
+
+                            Class.forName("com.mysql.cj.jdbc.Driver");
+                            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
+
+                            String sql =  "UPDATE mokki SET mokkinimi = ?, hinta = ?, kuvaus = ?, henkilomaara = ?, varustelu = ? WHERE mokki_id = ?";
+                            PreparedStatement update = conn.prepareStatement(sql);
+                            
+                          
+                            update.setString(1, mokkiMuokattuNimi);
+                            update.setDouble(2, Double.parseDouble(mokkiMuokattuHinta));
+                            update.setString(3, mokkiMuokattuKuvaus);
+                            update.setString(4, mokkiMuokattuHenkmaara);
+                            update.setString(5, mokkiMuokattuVarustelu);
+                            update.setInt(6, m.getMokkiId());
+                    
+                            update.executeUpdate();
+                            
+                            conn.close();
+
+                            for(Alue b: alueet){
+                                if(b.getNimi() == mokkiMuokattuAlue){
+                                    m.setAlue(b);
+                                }
+                            }
+                           
+                            m.setMokkinimi(mokkiMuokattuNimi);
+                            m.setHinta(Double.parseDouble(mokkiMuokattuHinta));
+                            m.setKuvaus(mokkiMuokattuKuvaus);
+                            m.setHenkilomaara(Integer.parseInt(mokkiMuokattuHenkmaara));
+                            m.setVarustelu(mokkiMuokattuVarustelu);
+                            errMsgM.setText("Muutokset tallennettu");
+                            errMsgM.setFill(Color.GREEN);
+                            i.setText("Id: " + m.getMokkiId() + ", " + m.getMokkinimi());
+                           
+                        }catch(Exception err){
+                            System.out.println(err);
+                            errMsgM.setText("Muutosten tallennuksessa virhe!");
+                        }
+                    }
+                }
+            }
+        });    
+    }   
+}
+}
+return mokitBox;
+}
+*/
 }
