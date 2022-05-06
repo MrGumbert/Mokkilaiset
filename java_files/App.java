@@ -236,7 +236,7 @@ public class App extends Application{
                 }
                 varaus.setVarattuPvm(rs.getTimestamp(4));
                 varaus.setVahvistusPvm(rs.getTimestamp(5));
-                varaus.setVarattuAlkuPvm(rs.getDate(6));
+                varaus.setVarattuAlkuPvm(rs.getTimestamp(6));
                 varaus.setVarattuLoppuPvm(rs.getTimestamp(7));
                 temp.add(varaus);
             }
@@ -329,7 +329,8 @@ public class App extends Application{
                 VarauksetPalvelut palvelu = new VarauksetPalvelut();
                 palvelu.setVarausId(rs.getInt(1));
                 palvelu.setPalveluId(rs.getInt(2));
-                palvelu.setLkm(rs.getInt(3));
+                palvelu.setAjankohta(rs.getTimestamp(3));
+                palvelu.setLkm(rs.getInt(4));
                 temp.add(palvelu);
             }
             con.close();
@@ -340,6 +341,7 @@ public class App extends Application{
                             if(v.getPalveluId() == p.getPalveluId()){
                                 VarauksenPalvelu temp2 = new VarauksenPalvelu();
                                 temp2.setPalvelu(p);
+                                temp2.setAjankohta(v.getAjankohta());
                                 temp2.setLkm(v.getLkm());
                                 v2.addVarauksenPalvelu(temp2);
                             }
@@ -556,8 +558,8 @@ public class App extends Application{
         alkuIkkuna.setTitle("Mökkiläiset");
         //alkuIkkuna.setMaximized(true);
         alkuIkkuna.setScene(mainScene);
-        alkuIkkuna.setHeight(800);
-        alkuIkkuna.setWidth(650);
+        alkuIkkuna.setHeight(900);
+        alkuIkkuna.setWidth(800);
         alkuIkkuna.show();
 
     }
@@ -676,12 +678,12 @@ public class App extends Application{
         asiakkaatLuo.add(etunimiTFU, 1,1);
         asiakkaatLuo.add(sukunimiUusi, 0,2);
         asiakkaatLuo.add(sukunimiTFU, 1,2);
-        asiakkaatLuo.add(postinroUusi, 0,3);
-        asiakkaatLuo.add(postinroTFU, 1,3);
-        asiakkaatLuo.add(postiTUusi, 0,4);
-        asiakkaatLuo.add(postiTTFU, 1,4);
-        asiakkaatLuo.add(lahiosoiteUusi, 0,5);
-        asiakkaatLuo.add(lahiosoiteTFU, 1,5);
+        asiakkaatLuo.add(lahiosoiteUusi, 0,3);
+        asiakkaatLuo.add(lahiosoiteTFU, 1,3);
+        asiakkaatLuo.add(postinroUusi, 0,4);
+        asiakkaatLuo.add(postinroTFU, 1,4);
+        asiakkaatLuo.add(postiTUusi, 0,5);
+        asiakkaatLuo.add(postiTTFU, 1,5);
         asiakkaatLuo.add(emailUusi, 0,6);
         asiakkaatLuo.add(emailTFU, 1,6);
         asiakkaatLuo.add(puhelinnroUusi, 0,7);
@@ -1112,10 +1114,12 @@ public class App extends Application{
 
         Label nimiHaku = new Label("Nimi: ");
         ComboBox<String> nimiCB = new ComboBox<String>();
+        nimiCB.getItems().add("Ei hakuehtoa");
         for(Asiakas a : asiakkaat){
             String name = a.getEtunimi() + " " + a.getSukunimi();
             nimiCB.getItems().add(name);
         }
+        nimiCB.setValue("Ei hakuehtoa");
         Label mokkiHaku = new Label("Mökin nimi: ");
         Label postinroHaku = new Label("Postinro: ");
         TextField mokkiTF = new TextField();
@@ -1156,7 +1160,7 @@ public class App extends Application{
             LocalDate alku = alkupvmDP.getValue();
             LocalDate loppu = loppupvmDP.getValue();
 
-            if(nimiCB.getValue() == ""){
+            if(nimiCB.getValue() == null || nimiCB.getValue() == "Ei hakuehtoa"){
                 nimi = "";
             }else{
                 nimi = nimiCB.getValue();
@@ -1178,23 +1182,35 @@ public class App extends Application{
                 Pattern pattern = Pattern.compile(nimi, Pattern.CASE_INSENSITIVE);
                 Pattern pattern2 = Pattern.compile(mNimi, Pattern.CASE_INSENSITIVE);
                 Pattern pattern3 = Pattern.compile(postinro, Pattern.CASE_INSENSITIVE);
+
                 Matcher matcher = pattern.matcher(v.getAsiakas().getEtunimi() + " " + v.getAsiakas().getSukunimi());
                 Matcher matcher2 = pattern2.matcher(v.getMokki().getMokkinimi());
                 Matcher matcher3 = pattern3.matcher(v.getMokki().getPosti().getPostinro());
+
                 boolean matchFound = matcher.find();
                 boolean matchFound2 = matcher2.find();
                 boolean matchFound3 = matcher3.find();
 
+                Date alkuDate = new Date(v.getVarattuAlkuPvm().getTime());
+                Date loppuDate = new Date(v.getVarattuLoppuPvm().getTime());
                 boolean alkuFlag = true;
                 if(alku != null){
-                    java.sql.Date alkuTemp = Date.valueOf(alku);
+                    if(alku.compareTo(alkuDate.toLocalDate()) <= 0){
+                        alkuFlag = true;
+                    }else{
+                        alkuFlag = false;
+                    }
                 }
                 boolean loppuFlag = true;
                 if(loppu != null){
-                    java.sql.Date loppuTemp = Date.valueOf(loppu);
+                    if(loppu.compareTo(loppuDate.toLocalDate()) <= 0){
+                        loppuFlag = true;
+                    }else{
+                        loppuFlag = false;
+                    }
                 }
                 
-                if(matchFound && matchFound2 && matchFound3){
+                if(matchFound && matchFound2 && matchFound3 && alkuFlag && loppuFlag){
                     temp.add(v);
                 }
             }
@@ -1252,51 +1268,45 @@ public class App extends Application{
                 vTiedot.setHgap(5);
                 vTiedot.setVgap(6);
                 vTiedot.setPadding(new Insets(15, 5, 15, 5));
-                if(v.getAsiakas() != null){
-                    Label etunimiM = new Label("Etunimi: ");
-                    TextField etunimiTM = new TextField(v.getAsiakas().getEtunimi());
-                    vTiedot.add(etunimiM, 0,0);
-                    vTiedot.add(etunimiTM, 1,0);
-                    Label sukunimiM = new Label("Sukunimi: ");
-                    TextField sukunimiTM = new TextField(v.getAsiakas().getSukunimi());
-                    vTiedot.add(sukunimiM, 2,0);
-                    vTiedot.add(sukunimiTM, 3,0);
-                    Label lahiosoiteM = new Label("Lähiosoite: ");
-                    TextField lahiosoiteTM = new TextField(v.getAsiakas().getLahiOsoite());
-                    vTiedot.add(lahiosoiteM, 0,1);
-                    vTiedot.add(lahiosoiteTM, 1,1);
-                    Label postinroM = new Label("Postinumero: ");
-                    TextField postinroTM = new TextField(v.getAsiakas().getPosti().getPostinro());
-                    if(postinroTM.getText().equals("00000")){
-                        postinroM.setTextFill(Color.RED);
-                    }
-                    vTiedot.add(postinroM, 0,2);
-                    vTiedot.add(postinroTM, 1,2);
-                    Label postiTM = new Label("Toimipaikka: ");
-                    TextField postiTTM = new TextField(v.getAsiakas().getPosti().getToimipaikka());
-                    if(postiTTM.getText().equals("Rikki")){
-                        postiTM.setTextFill(Color.RED);
-                    }
-                    vTiedot.add(postiTM, 2,2);
-                    vTiedot.add(postiTTM, 3,2);
-                    Label emailM = new Label("Email: ");
-                    TextField emailTM = new TextField(v.getAsiakas().getEmail());
-                    vTiedot.add(emailM, 0,3);
-                    vTiedot.add(emailTM, 1,3);
-                    Label puhM = new Label("Puhelinnro: ");
-                    TextField puhTM = new TextField(v.getAsiakas().getPuhelinnro());
-                    vTiedot.add(puhM, 2,3);
-                    vTiedot.add(puhTM, 3,3);
-                }else{
 
+                Label asiakasLabel = new Label("Asiakas: ");
+                if(v.getAsiakas() != null){
+                    Button goToAsiakas = new Button((v.getAsiakas().getEtunimi() + " " + v.getAsiakas().getSukunimi()));
+                    vTiedot.add(asiakasLabel, 0,0);
+                    vTiedot.add(goToAsiakas, 1,0);
+                }else{
+                    Text noAsiakasLabel = new Text("Ei asiakasta");
+                    vTiedot.add(asiakasLabel, 0,0);
+                    vTiedot.add(noAsiakasLabel, 1,0);
                 }
-                
-                Button saveEditBtn = new Button("Tallenna");
-                vTiedot.add(saveEditBtn, 1,4);
-                Button deleteUserBtn = new Button("Poista");
-                vTiedot.add(deleteUserBtn, 2,4);
+
+                Label mokkiLabel = new Label("Mökki: ");
+                if(v.getMokki() != null){
+                    Button goToMokki = new Button(v.getMokki().getMokkinimi());
+                    vTiedot.add(mokkiLabel, 0,1);
+                    vTiedot.add(goToMokki, 1,1);
+                }else{
+                    Text noMokkiLabel = new Text("Ei mökkiä");
+                    vTiedot.add(asiakasLabel, 0,0);
+                    vTiedot.add(noMokkiLabel, 1,0);
+                }
+      
+                GridPane vTiedot2 = new GridPane();
+                vTiedot2.setHgap(5);
+                vTiedot2.setVgap(6);
+                vTiedot2.setPadding(new Insets(15, 5, 15, 5));
+
+                Text varauksenTiedotTitle = new Text("Varauksen tiedot");
+                vTiedot2.add(varauksenTiedotTitle, 0,0);
+                GridPane.setColumnSpan(varauksenTiedotTitle, GridPane.REMAINING);
+
+                Label varattupvmLabel = new Label("Varaus päivämäärä: ");
+                TextField varattupvmTF = new TextField(String.valueOf(v.getVarattuPvm()));
+                vTiedot2.add(varattupvmLabel, 0,1);
+                vTiedot2.add(varattupvmTF, 1,1);
 
                 vvTiedot.getChildren().add(vTiedot);
+                vvTiedot.getChildren().add(vTiedot2);
                 TitledPane i = new TitledPane(n, vvTiedot);
                 i.setExpanded(false);
                 varauksetBox.getChildren().add(i);
