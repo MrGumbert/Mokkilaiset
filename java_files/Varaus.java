@@ -5,11 +5,11 @@ public class Varaus {
     Mokki mokki;
     java.sql.Timestamp varattu_pvm;
     java.sql.Timestamp vahvistus_pvm;
-    java.sql.Date varattu_alkupvm;
+    java.sql.Timestamp varattu_alkupvm;
     java.sql.Timestamp varattu_loppupvm;
     ArrayList<VarauksenPalvelu> varauksenPalvelut = new ArrayList<VarauksenPalvelu>();
 
-    public Varaus(int vid, Asiakas asiakas, Mokki mokki, java.sql.Timestamp varattu_pvm, java.sql.Timestamp vahvistus_pvm, java.sql.Date varattu_alkupvm, java.sql.Timestamp varattu_loppupvm, ArrayList<VarauksenPalvelu> palvelut){
+    public Varaus(int vid, Asiakas asiakas, Mokki mokki, java.sql.Timestamp varattu_pvm, java.sql.Timestamp vahvistus_pvm, java.sql.Timestamp varattu_alkupvm, java.sql.Timestamp varattu_loppupvm, ArrayList<VarauksenPalvelu> palvelut){
         this.varaus_id = vid;
         this.asiakas = asiakas;
         this.mokki = mokki;
@@ -39,7 +39,7 @@ public class Varaus {
     public java.sql.Timestamp getVahvistusPvm(){
         return this.vahvistus_pvm;
     }
-    public java.sql.Date getVarattuAlkuPvm(){
+    public java.sql.Timestamp getVarattuAlkuPvm(){
         return this.varattu_alkupvm;
     }
     public java.sql.Timestamp getVarattuLoppuPvm(){
@@ -64,7 +64,7 @@ public class Varaus {
     public void setVahvistusPvm(java.sql.Timestamp VahvistusPvm){
         this.vahvistus_pvm = VahvistusPvm;
     }
-    public void setVarattuAlkuPvm(java.sql.Date VarattuAlkuPvm){
+    public void setVarattuAlkuPvm(java.sql.Timestamp VarattuAlkuPvm){
         this.varattu_alkupvm = VarattuAlkuPvm;
     }
     public void setVarattuLoppuPvm(java.sql.Timestamp VarattuLoppuPvm){
