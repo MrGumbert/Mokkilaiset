@@ -94,4 +94,25 @@ public class Mokki {
         return pr;
 
     }
+
+    public boolean checkCopy(String mokkiMuokattuAlue, String mokkiMuokattuPostinro, String mokkiMuokattuNimi, String mokkiMuokattuOsosite){
+        int calc = 0;
+        if(this.alue.getNimi().equals(mokkiMuokattuAlue)){
+            calc += 1;
+        }
+        if(this.posti.getPostinro().equals(mokkiMuokattuPostinro)){
+            calc += 1;
+        }
+        if(this.mokkinimi.equals(mokkiMuokattuNimi)){
+            calc += 1;
+        }
+        if(this.katuosoite.equals(mokkiMuokattuOsosite)){
+            calc += 1;
+        }
+        if(calc == 4){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
