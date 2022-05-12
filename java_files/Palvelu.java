@@ -6,6 +6,7 @@ public class Palvelu {
     String kuvaus;
     double hinta;
     double alv;
+    int osto_lkm;
 
     public Palvelu(int pid, Alue alue, String nimi, int tyyppi, String kuvaus, double hinta, double alv){
         this.palvelu_id = pid;
@@ -15,6 +16,7 @@ public class Palvelu {
         this.kuvaus = kuvaus;
         this.hinta = hinta;
         this.alv = alv;
+        this. osto_lkm = 0;
     }
 
     public Palvelu(){
@@ -77,5 +79,17 @@ public class Palvelu {
         pr += "\nAlv: " + this.alv;
         return pr;
 
+    }
+
+    public void lisaaOsto(){
+        this.osto_lkm += 1;
+    }
+
+    public void nollaaOstot(){
+        this.osto_lkm = 0;
+    }
+
+    public int getOsto_lkm(){
+        return this.osto_lkm;
     }
 }
