@@ -40,7 +40,7 @@ import javafx.stage.Stage;
 
 public class App extends Application{
     String HOST_USER = "root";
-    String HOST_PSWD = "Pattu";
+    String HOST_PSWD = "";
     ArrayList<Posti> postit = getPostit();
     ArrayList<Alue> alueet = getAlueet();
     ArrayList<Asiakas> asiakkaat = getAsiakkaat();
