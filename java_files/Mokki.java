@@ -9,6 +9,13 @@ public class Mokki {
     int henkilomaara;
     String varustelu;
 
+    /**
+    * Raportti näkymää varten
+    * Tätä ei tallenneta tietokantaan
+    */
+    int varausten_lkm;
+    
+
     public Mokki(int mid, Alue alue, Posti posti, String mokkinimi, String katuosoite, double hinta, String kuvaus, int henkilomaara, String varustelu){
         this.mokki_id = mid;
         this.alue = alue;
@@ -19,6 +26,7 @@ public class Mokki {
         this.kuvaus = kuvaus;
         this.henkilomaara = henkilomaara;
         this.varustelu = varustelu;
+        this.varausten_lkm = 0;
     }
 
     public Mokki(){
@@ -40,7 +48,7 @@ public class Mokki {
     public String getKatuosoite(){
         return this.katuosoite;
     }
-    public double gethinta(){
+    public double getHinta(){
         return this.hinta;
     }
     public String getKuvaus(){
@@ -93,5 +101,41 @@ public class Mokki {
         pr += "\nVarustelu: " + this.varustelu;
         return pr;
 
+    }
+
+    public boolean checkCopy(String mokkiMuokattuAlue, String mokkiMuokattuPostinro, String mokkiMuokattuNimi, String mokkiMuokattuOsosite){
+        int calc = 0;
+        if(this.alue.getNimi().equals(mokkiMuokattuAlue)){
+            calc += 1;
+        }
+        if(this.posti.getPostinro().equals(mokkiMuokattuPostinro)){
+            calc += 1;
+        }
+        if(this.mokkinimi.equals(mokkiMuokattuNimi)){
+            calc += 1;
+        }
+        if(this.katuosoite.equals(mokkiMuokattuOsosite)){
+            calc += 1;
+        }
+        if(calc == 4){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Raportti näkymää varten
+     */
+    public void lisaa_varaus(){
+        this.varausten_lkm += 1;
+    }
+
+    public int getVarausten_lkm(){
+        return this.varausten_lkm;
+    }
+
+    public void nollaaVaraukset(){
+        this.varausten_lkm = 0;
     }
 }

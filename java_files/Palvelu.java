@@ -2,12 +2,13 @@ public class Palvelu {
     int palvelu_id;
     Alue alue;
     String nimi;
-    int tyyppi;
+    String tyyppi;
     String kuvaus;
     double hinta;
     double alv;
+    int osto_lkm;
 
-    public Palvelu(int pid, Alue alue, String nimi, int tyyppi, String kuvaus, double hinta, double alv){
+    public Palvelu(int pid, Alue alue, String nimi, String tyyppi, String kuvaus, double hinta, double alv){
         this.palvelu_id = pid;
         this.alue = alue;
         this.nimi = nimi;
@@ -15,6 +16,7 @@ public class Palvelu {
         this.kuvaus = kuvaus;
         this.hinta = hinta;
         this.alv = alv;
+        this. osto_lkm = 0;
     }
 
     public Palvelu(){
@@ -30,7 +32,7 @@ public class Palvelu {
     public String getNimi(){
         return this.nimi;
     }
-    public int getTyyppi(){
+    public String getTyyppi(){
         return this.tyyppi;
     }
     public String getKuvaus(){
@@ -52,7 +54,7 @@ public class Palvelu {
     public void setNimi(String nimi){
         this.nimi = nimi;
     }
-    public void setTyyppi(int tyyppi){
+    public void setTyyppi(String tyyppi){
         this.tyyppi = tyyppi;
     }
     public void setKuvaus(String kuvaus){
@@ -77,5 +79,17 @@ public class Palvelu {
         pr += "\nAlv: " + this.alv;
         return pr;
 
+    }
+
+    public void lisaaOsto(){
+        this.osto_lkm += 1;
+    }
+
+    public void nollaaOstot(){
+        this.osto_lkm = 0;
+    }
+
+    public int getOsto_lkm(){
+        return this.osto_lkm;
     }
 }

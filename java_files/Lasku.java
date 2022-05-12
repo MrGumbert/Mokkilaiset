@@ -1,6 +1,7 @@
 public class Lasku {
     int lasku_id;
     Varaus varaus;
+    String viitenumero;
     double summa;
     double alv;
     boolean maksettu;
@@ -8,9 +9,10 @@ public class Lasku {
     java.sql.Date laskupaiva;
     String laskutyyppi;
 
-    public Lasku(int lid, Varaus varaus, double summa, double alv, boolean maksettu, java.sql.Date erapaiva, java.sql.Date laskupaiva, String laskutyyppi){
+    public Lasku(int lid, Varaus varaus, String viitenumero, double summa, double alv, boolean maksettu, java.sql.Date erapaiva, java.sql.Date laskupaiva, String laskutyyppi){
         this.lasku_id = lid;
         this.varaus = varaus;
+        this.viitenumero = viitenumero;
         this.summa = summa;
         this.alv = alv;
         this.maksettu = maksettu;
@@ -28,6 +30,9 @@ public class Lasku {
     }
     public Varaus getVaraus(){
         return this.varaus;
+    }
+    public String getViitenumero(){
+        return this.viitenumero;
     }
     public double getSumma(){
         return this.summa;
@@ -53,6 +58,9 @@ public class Lasku {
     }
     public void setVaraus(Varaus varaus){
         this.varaus = varaus;
+    }
+    public void setViitenumero(String viitenumero){
+        this.viitenumero = viitenumero;
     }
     public void setSumma(double summa){
         this.summa = summa;
