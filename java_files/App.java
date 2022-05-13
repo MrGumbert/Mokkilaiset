@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -10,8 +13,20 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.awt.Desktop;
+
+import javax.mail.Message;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.MessagingException;
+import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
+
+import javax.mail.Session;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -40,7 +55,7 @@ import javafx.stage.Stage;
 
 public class App extends Application{
     String HOST_USER = "root";
-    String HOST_PSWD = "";
+    String HOST_PSWD = "Pattu";
     ArrayList<Posti> postit = getPostit();
     ArrayList<Alue> alueet = getAlueet();
     ArrayList<Asiakas> asiakkaat = getAsiakkaat();
@@ -146,7 +161,7 @@ public class App extends Application{
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM asiakas");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM asiakas ORDER BY etunimi");
             ArrayList<Asiakas> temp = new ArrayList<Asiakas>();
             while(rs.next()){
                 boolean postiError = true;
@@ -910,27 +925,7 @@ public class App extends Application{
                 errors += 1;
                 postinroUusi.setTextFill(Color.RED);
             }
-            /*
-            if(flag){
-                try{
-                    String query = "INSERT INTO posti VALUES (";
-                    query += "'" + postinro + "', ";
-                    query += "'" + postiT + "')";
 
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
-                    Statement stmt = con.createStatement();
-                    stmt.executeUpdate(query);
-                    con.close();
-
-                    setPostit(getPostit());
-
-                }catch(Exception err){
-                    System.out.println(err);
-                    errMsgU.setText("VIRHE!");
-                }
-            }
-            */
             if(errors == 0){
                 errMsgU.setText("");
                 try{
@@ -1221,7 +1216,7 @@ public class App extends Application{
                                 }
                                 errMsgM.setText("Muutokset tallennettu");
                                 errMsgM.setFill(Color.GREEN);
-                                i.setText(a.getAsiakasId() + ", " + a.getEtunimi() + " " + a.getSukunimi() + " (" + a.getPuhelinnro() + ")");
+                                i.setText(a.getEtunimi() + " " + a.getSukunimi() + " (" + a.getPuhelinnro() + ")");
                                
                             }catch(Exception err){
                                 System.out.println(err);
@@ -2814,15 +2809,31 @@ public class App extends Application{
 
                     delVaraus.setOnAction(e -> {
                         try{
-                            String sql = "DELETE FROM varaus WHERE varaus_id=" + v.getVarausId();
                             Class.forName("com.mysql.cj.jdbc.Driver");
                             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mokkilaiset", HOST_USER, HOST_PSWD);
-                            Statement stmt = con.createStatement();
-                            stmt.executeUpdate(sql);
+
                             String sql2 = "DELETE FROM varauksen_palvelut WHERE varaus_id=" + v.getVarausId();
                             Statement stmt2 = con.createStatement();
                             stmt2.executeUpdate(sql2);
+
+                            String sql3 = "DELETE FROM lasku WHERE varaus_id=" + v.getVarausId();
+                            Statement stmt3 = con.createStatement();
+                            stmt3.executeUpdate(sql3);
+
+                            String sql = "DELETE FROM varaus WHERE varaus_id=" + v.getVarausId();
+                            Statement stmt = con.createStatement();
+                            stmt.executeUpdate(sql);
+
                             con.close();
+
+                            for(Lasku l : laskut){
+                                if(l.getVaraus() != null){
+                                    if(l.getVaraus().getVarausId() == v.getVarausId()){
+                                        laskut.remove(l);
+                                        break;
+                                    }
+                                }
+                            }
                             varauksetBox.getChildren().remove(i);
                             for(Varaus v2 : varaukset){
                                 if(v2.getVarausId() == v.getVarausId()){
@@ -3038,8 +3049,7 @@ public class App extends Application{
                 } else if(l.getMaksettu() == false){
                     maksettu = "Ei";
                 }
-                Button btLasku = new Button("Tulosta lasku");
-                //Button btLasku = new Button("Avaa lasku");
+
                 String laskuPalvelut = "";
                 Double laskuSum = 0.0;
                 ArrayList<VarauksenPalvelu> palvot = l.getVaraus().getVarauksenPalvelut();
@@ -3055,6 +3065,11 @@ public class App extends Application{
                     laskuPalvelut += "\n";
                     laskuSum += palvot.get(k).getPalvelu().getHinta() * palvot.get(k).getLkm();
                 }
+
+                Date alkuDate = new Date(l.getVaraus().getVarattuAlkuPvm().getTime());
+                Date loppuDate = new Date(l.getVaraus().getVarattuLoppuPvm().getTime());
+                long days = ChronoUnit.DAYS.between(alkuDate.toLocalDate(), loppuDate.toLocalDate());
+
                 Label label = new Label("LASKU\n\n" + "Laskuttaja:\nMökkiläiset\nTestitie 3\n70800 KUOPIO\n\n" 
                         + "Laskun päiväys:\n" + DateFor.format(l.getLaskupaiva()) + "\n\nMaksaja:\n"
                         + l.getVaraus().getAsiakas().getEtunimi() + " " + l.getVaraus().getAsiakas().getSukunimi() + "\n"
@@ -3064,46 +3079,87 @@ public class App extends Application{
                         + "Mökki: " +  l.getVaraus().getMokki().getMokkinimi()
                         + "\nAjankohta: " + DateFor.format(l.getVaraus().getVarattuAlkuPvm()) + "-" + DateFor.format(l.getVaraus().getVarattuLoppuPvm())
                         + "\n\nYhden yön hinta: " + l.getVaraus().getMokki().getHinta() + " €"
-                        //+ "\nÖiden lukumäärä: " + l.getVrk()
+                        + "\nÖiden lukumäärä: " + days
                         + "\n\nMökin kokonaissumma: " + l.getSumma() + " €"
                         + "\n\nLisäpalvelut:\n"
                         + laskuPalvelut
-                        /*
-                        if (laskuunPalvelut != "")
-                            + ""
-                            + getLaskuunPalvelut() + "\n\n"
-                            
-                        */
                         + "\n\nLaskun kokonaissumma: " + String.valueOf(l.getSumma() + laskuSum) + " €"
                         + "\n\nLaskun eräpäivä:  " + DateFor.format(l.getErapaiva()) 
                         + "\n\nSaajan IBAN:  FI11 1111 1111 1111 11 " 
                         + "\n\nViitenumero: " + l.getViitenumero()
-                        + "\n\n\n Maksettu: " + maksettu);
-                //long days = ChronoUnit.DAYS.between(alkuPvm, loppuPvm);
+                        + "\n\n\n Maksettu: " + maksettu
+                );
                 label.setPadding(new Insets(15, 5, 15, 5));
 
                 String n = "Id: " + l.getLaskuId() + ", ";
-                if(l.getVaraus() == null){
-                    n += "Varaus poistettu ";
-                }else{
-                    if(l.getVaraus().getAsiakas() == null){
-                        n += "Asiakas poistettu ";
+                    if(l.getVaraus() == null){
+                        n += "Varaus poistettu ";
                     }else{
-                        n += l.getVaraus().getAsiakas().getEtunimi() + " " + l.getVaraus().getAsiakas().getSukunimi();
+                        if(l.getVaraus().getAsiakas() == null){
+                            n += "Asiakas poistettu ";
+                        }else{
+                            n += l.getVaraus().getAsiakas().getEtunimi() + " " + l.getVaraus().getAsiakas().getSukunimi();
+                        }
                     }
-                }
-                n += " (" + String.valueOf(l.getSumma() + laskuSum) + "€)";
-                
+                    n += " (" + String.valueOf(l.getSumma()) + "€)";
+                                
                 VBox lLasku = new VBox();
-           
+                
+                GridPane laskuNapit = new GridPane();
+                laskuNapit.setHgap(8);
+                laskuNapit.setVgap(4);
+                laskuNapit.setPadding(new Insets(15, 0, 10, 0));
+                laskuNapit.setAlignment(Pos.CENTER);
+                Button btLasku = new Button("Tulosta lasku");
+                Button btLahetaLasku = new Button("Lähetä lasku");
+                laskuNapit.add(btLasku, 0,0);
+                laskuNapit.add(btLahetaLasku, 1,0);
+                
                 lLasku.getChildren().add(label);
-                lLasku.getChildren().add(btLasku);
+                lLasku.getChildren().add(laskuNapit);
                 
                 TitledPane i = new TitledPane(n, lLasku);
                 
                 i.setExpanded(false);
 
                 laskutBox.getChildren().add(i);
+                String sahkopostios = l.getVaraus().getAsiakas().getEmail();
+                String mokki = l.getVaraus().getMokki().getMokkinimi();
+                String aika = l.getVaraus().getVarattuAlkuPvm() + " - " + l.getVaraus().getVarattuLoppuPvm();
+                
+                String laskuString = "LASKU\n\n" + "Laskuttaja:\nMökkiläiset\nTestitie 3\n70800 KUOPIO\n\n" 
+                + "Laskun päiväys:\n" + DateFor.format(l.getLaskupaiva()) + "\n\nMaksaja:\n"
+                + l.getVaraus().getAsiakas().getEtunimi() + " " + l.getVaraus().getAsiakas().getSukunimi() + "\n"
+                + l.getVaraus().getAsiakas().getLahiOsoite() + "\n" + l.getVaraus().getAsiakas().getPosti().getPostinro() 
+                + "\n\nLaskun numero:\n" + l.getLaskuId() 
+                + "\n\nLaskuerittely:\n"
+                + "Mökki: " +  l.getVaraus().getMokki().getMokkinimi()
+                + "\nAjankohta: " + DateFor.format(l.getVaraus().getVarattuAlkuPvm()) + "-" + DateFor.format(l.getVaraus().getVarattuLoppuPvm())
+                + "\n\nYhden yön hinta: " + l.getVaraus().getMokki().getHinta() + " €"
+                + "\nÖiden lukumäärä: " + days
+                + "\n\nMökin kokonaissumma: " + l.getSumma() + " €"
+                + "\n\nLisäpalvelut:\n"
+                + laskuPalvelut
+                + "\n\nLaskun kokonaissumma: " + String.valueOf(l.getSumma() + laskuSum) + " €"
+                + "\n\nLaskun eräpäivä:  " + DateFor.format(l.getErapaiva()) 
+                + "\n\nSaajan IBAN:  FI11 1111 1111 1111 11 " 
+                + "\n\nViitenumero: " + l.getViitenumero();
+
+                btLasku.setOnAction(e -> {
+                    try {
+                        laskuTulostus(l.getLaskuId(), laskuString);
+                    } catch (IOException E){
+                        System.out.println(E);
+                    }
+                });
+                
+                btLahetaLasku.setOnAction(e -> {
+                    try {
+                        LahetaEmail(laskuString, sahkopostios, mokki, aika, true);
+                    } catch (IOException E){
+                        System.out.println(E);
+                    }
+                });
 
                 }
             }
@@ -3112,13 +3168,94 @@ public class App extends Application{
         return laskutBox;
     }
 
+    private void laskuTulostus(int lasku_id, String str) throws IOException {
+ 
+        String path = "C://laskut/";
+        File folder = new File(path);
+
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
+        File tiedosto = new File(path + "lasku" + lasku_id + ".txt");
+
+        if (tiedosto.createNewFile()) {
+            PrintWriter kirjoitusTiedosto = new PrintWriter(tiedosto);
+            String Laskuteksti = str;
+            kirjoitusTiedosto.print(Laskuteksti + " \n");
+            kirjoitusTiedosto.close();
+        
+        }
+        
+        if(!Desktop.isDesktopSupported()){  
+            System.out.println("not supported");  
+            return;  
+        }  
+        
+        Desktop desktop = Desktop.getDesktop();  
+        if(tiedosto.exists()) {         
+            desktop.open(tiedosto);              
+        }  
+        
+    }
+   // TÄSSÄ YRITETTY SAADA SÄHKÖPOSTILLA LÄHETYS TOIMIMAAN MUTTA EI SAATU TOIMIMAAN. EPÄILLÄÄN ETTÄ VIKA YAHOO:SSA.
+    private void LahetaEmail(String str, String sahkopostios, String mokki, String aika, boolean flag) throws IOException {
+        if(flag){
+
+        }else{
+            try
+            {
+                final String fromEmail = "mokkilaiset@yahoo.com"; 
+                final String password = "M0kk1la1s3t"; 
+                final String toEmail = "tjokela@student.uef.fi"; 
+
+                System.out.println("TLSEmail Start");
+                Properties props = new Properties();
+                props.put("mail.smtp.host", "smtp.mail.yahoo.com"); 
+                props.put("mail.smtp.port", "465"); 
+                props.put("mail.smtp.auth", "Required"); 
+                props.put("mail.smtp.starttls.enable", "true"); 
+
+                System.out.println("Calling getPasswordAuthentication");
+                Authenticator auth = new Authenticator() {
+
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(fromEmail, password);
+                        }
+                };
+                System.out.println("After getPasswordAuthentication");
+                
+                Session session = Session.getInstance(props, auth);
+
+                String body = str;
+                MimeMessage msg = new MimeMessage(session);
+                msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
+                msg.addHeader("format", "flowed");
+                msg.addHeader("Content-Transfer-Encoding", "8bit");
+
+                msg.setFrom(new InternetAddress(fromEmail, "NoReply-JD"));
+                msg.setReplyTo(InternetAddress.parse(fromEmail, false));
+
+                msg.setSubject("Laskunne varauksesta " + mokki  + " ajankohdalle " + aika, "UTF-8");
+                msg.setText(body, "UTF-8");
+                msg.setSentDate(new java.util.Date());
+                msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+                System.out.println("Message is ready");
+                Transport.send(msg);
+
+                System.out.println("Email Sent Successfully!!");
+            }
+            catch (Exception e) {
+            e.printStackTrace();
+            }
+        }
+    }
 
     //UUSI PALVELUT NÄKYMÄ
     private ScrollPane createPalvelutSivu(){
         ScrollPane sp = new ScrollPane();
         VBox palvelutSivu = new VBox();
         sp.setFitToWidth(true);
-        //sp.setFitToHeight(true);
         sp.setContent(palvelutSivu);
         palvelutSivu.setStyle("-fx-background-color:#fff;");
         palvelutSivu.setAlignment(Pos.CENTER);
