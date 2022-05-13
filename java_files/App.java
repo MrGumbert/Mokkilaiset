@@ -3206,8 +3206,8 @@ public class App extends Application{
             try
             {
                 final String fromEmail = "mokkilaiset@yahoo.com"; 
-                final String password = "M0kk1la1s3t"; 
-                final String toEmail = "tjokela@student.uef.fi"; 
+                final String password = "************"; 
+                final String toEmail = sahkopostios; 
 
                 System.out.println("TLSEmail Start");
                 Properties props = new Properties();
